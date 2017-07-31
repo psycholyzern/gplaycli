@@ -304,7 +304,10 @@ class GPlaycli(object):
 
             # Download
             try:
-                data = playstore_api.download(packagename, vc, progress_bar=self.progress_bar)
+                if doc.offer[0].checkoutFlowRequired:
+                    data = playstore_api.delivery(packagename, vc, progress_bar=self.progress_bar)
+                else:
+                    data = playstore_api.download(packagename, vc, progress_bar=self.progress_bar)
                 success_downloads.append(packagename)
             except IndexError as exc:
                 print "Error while downloading %s : %s" % (packagename,
@@ -468,6 +471,7 @@ def main():
                         type=str, help="List APKS in the given folder, with details")
     parser.add_argument('-s', '--search', action='store', dest='search_string', metavar="SEARCH",
                         type=str, help="Search the given string in Google Play Store")
+    parser.add_argument('-P', '--paid', action='store_true', dest='paid', default=False, help='Also search for paid apps')
     parser.add_argument('-n', '--number', action='store', dest='number_results', metavar="NUMBER",
                         type=str, help="For the search option, returns the given number of matching applications")
     parser.add_argument('-d', '--download', action='store', dest='packages_to_download', metavar="AppID", nargs="+",
@@ -520,7 +524,7 @@ def main():
         nb_results = 10
         if args.number_results:
             nb_results = args.number_results
-        cli.search(list(), args.search_string, nb_results)
+        cli.search(list(), args.search_string, nb_results, not args.paid)
 
     if args.load_from_file:
         args.packages_to_download = load_from_file(args.load_from_file)
